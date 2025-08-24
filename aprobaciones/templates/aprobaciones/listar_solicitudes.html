@@ -1,0 +1,260 @@
+{% extends 'aprobaciones/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h2">
+                    <i class="fas fa-file-alt text-primary"></i>
+                    Detalle de Solicitud
+                </h1>
+                <p class="text-muted mb-0">ID: <code>{{ solicitud.id }}</code></p>
+            </div>
+            <div>
+                <a href="{% url 'listar_solicitudes' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+                {% if solicitud.estado == 'pendiente' %}
+                <button class="btn btn-success ms-2" onclick="aprobarSolicitud('{{ solicitud.id }}')">
+                    <i class="fas fa-check"></i> Aprobar
+                </button>
+                <button class="btn btn-danger ms-1" onclick="rechazarSolicitud('{{ solicitud.id }}')">
+                    <i class="fas fa-times"></i> Rechazar
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Información principal -->
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle"></i>
+                    Información de la Solicitud
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">
+                            <i class="fas fa-heading text-primary"></i> Título
+                        </h6>
+                        <p class="fw-bold">{{ solicitud.titulo }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">
+                            <i class="fas fa-tags text-primary"></i> Tipo de Solicitud
+                        </h6>
+                        <span class="badge bg-secondary fs-6">{{ solicitud.tipo_formateado }}</span>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">
+                            <i class="fas fa-user text-primary"></i> Solicitante
+                        </h6>
+                        <p>{{ solicitud.solicitante }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">
+                            <i class="fas fa-user-check text-primary"></i> Responsable
+                        </h6>
+                        <p>{{ solicitud.responsable }}</p>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <h6 class="text-muted mb-1">
+                            <i class="fas fa-align-left text-primary"></i> Descripción
+                        </h6>
+                        <div class="p-3 bg-light rounded">
+                            {{ solicitud.descripcion|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">
+                            <i class="fas fa-calendar-plus text-primary"></i> Fecha de Creación
+                        </h6>
+                        <p>{{ solicitud.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">
+                            <i class="fas fa-calendar-check text-primary"></i> Última Actualización
+                        </h6>
+                        <p>{{ solicitud.fecha_actualizacion|date:"d/m/Y H:i" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comentarios -->
+        <div class="card shadow">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-comments"></i>
+                    Comentarios ({{ solicitud.comentarios|length }})
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if solicitud.comentarios %}
+                    {% for comentario in solicitud.comentarios %}
+                    <div class="d-flex mb-3">
+                        <div class="flex-shrink-0">
+                            <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h6 class="mb-0">{{ comentario.usuario }}</h6>
+                                <small class="text-muted">{{ comentario.fecha|date:"d/m/Y H:i" }}</small>
+                            </div>
+                            {% if comentario.tipo %}
+                            <span class="badge bg-{% if comentario.tipo == 'aprobado' %}success{% elif comentario.tipo == 'rechazado' %}danger{% else %}secondary{% endif %} mb-2">
+                                {{ comentario.tipo|capfirst }}
+                            </span>
+                            {% endif %}
+                            <p class="mb-0">{{ comentario.comentario }}</p>
+                        </div>
+                    </div>
+                    {% if not forloop.last %}<hr>{% endif %}
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-comment-slash fa-2x mb-2"></i>
+                        <p>No hay comentarios aún</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel lateral -->
+    <div class="col-lg-4">
+        <!-- Estado actual -->
+        <div class="card shadow mb-4" data-solicitud-id="{{ solicitud.id }}">
+            <div class="card-header bg-light">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-flag text-info"></i>
+                    Estado Actual
+                </h6>
+            </div>
+            <div class="card-body text-center">
+                <span class="badge bg-{{ solicitud.color_estado }} fs-5 p-3" data-estado="{{ solicitud.estado }}">
+                    {% if solicitud.estado == 'pendiente' %}
+                        <i class="fas fa-hourglass-half"></i> PENDIENTE
+                    {% elif solicitud.estado == 'aprobado' %}
+                        <i class="fas fa-check-circle"></i> APROBADO
+                    {% elif solicitud.estado == 'rechazado' %}
+                        <i class="fas fa-times-circle"></i> RECHAZADO
+                    {% elif solicitud.estado == 'en_revision' %}
+                        <i class="fas fa-eye"></i> EN REVISIÓN
+                    {% else %}
+                        <i class="fas fa-question-circle"></i> {{ solicitud.estado|upper }}
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <!-- Historial de cambios -->
+        <div class="card shadow">
+            <div class="card-header bg-light">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-history text-info"></i>
+                    Historial de Cambios
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if solicitud.historial %}
+                    <div class="timeline">
+                        {% for entrada in solicitud.historial reversed %}
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <div class="timeline-marker bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">
+                                        {% if entrada.accion == 'creada' %}
+                                            <i class="fas fa-plus"></i>
+                                        {% elif entrada.accion == 'aprobado' %}
+                                            <i class="fas fa-check"></i>
+                                        {% elif entrada.accion == 'rechazado' %}
+                                            <i class="fas fa-times"></i>
+                                        {% else %}
+                                            <i class="fas fa-edit"></i>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-0 text-primary">{{ entrada.accion|capfirst }}</h6>
+                                    <p class="text-muted mb-1">
+                                        <i class="fas fa-user"></i> {{ entrada.usuario }}
+                                    </p>
+                                    <small class="text-muted">{{ entrada.fecha_formateada }}</small>
+                                    {% if entrada.comentario and entrada.comentario != entrada.accion|capfirst %}
+                                    <p class="mt-2 mb-0 small bg-light p-2 rounded">
+                                        {{ entrada.comentario }}
+                                    </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% if not forloop.last %}
+                        <div class="timeline-line bg-light mx-auto" style="width: 2px; height: 20px; margin-left: 14px;"></div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="fas fa-history fa-2x mb-2"></i>
+                        <p>No hay historial disponible</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación (opcional para futuras mejoras) -->
+<div class="modal fade" id="confirmacionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Acción</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="mensajeConfirmacion"></p>
+                <div class="mb-3">
+                    <label for="comentarioModal" class="form-label">Comentario (opcional):</label>
+                    <textarea id="comentarioModal" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmarAccion">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// El JavaScript principal ya maneja aprobarSolicitud y rechazarSolicitud
+// Solo agregamos funcionalidad específica de esta página si es necesaria
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Página de detalle cargada para solicitud:', '{{ solicitud.id }}');
+});
+</script>
+{% endblock %}
