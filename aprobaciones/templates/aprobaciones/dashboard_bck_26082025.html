@@ -1,0 +1,224 @@
+{% extends 'aprobaciones/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2">
+                <i class="fas fa-tachometer-alt text-primary"></i>
+                Dashboard - Sistema de Aprobaciones
+            </h1>
+            <a href="{% url 'crear_solicitud' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nueva Solicitud
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Cards de estadísticas -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card bg-primary text-white shadow">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="text-white-75 small">Solicitudes Totales</div>
+                        <div class="h5 mb-0">{{ estadisticas.total }}</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-clipboard-list fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card bg-warning text-white shadow">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="text-white-75 small">Pendientes</div>
+                        <div class="h5 mb-0">{{ estadisticas.pendientes }}</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-hourglass-half fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card bg-success text-white shadow">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="text-white-75 small">Aprobadas</div>
+                        <div class="h5 mb-0">{{ estadisticas.aprobadas }}</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card bg-danger text-white shadow">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="text-white-75 small">Rechazadas</div>
+                        <div class="h5 mb-0">{{ estadisticas.rechazadas }}</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-times-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Acciones rápidas -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bolt text-warning"></i>
+                    Acciones Rápidas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="d-grid">
+                            <a href="{% url 'crear_solicitud' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-plus-circle"></i>
+                                <br>
+                                <small>Crear Nueva Solicitud</small>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="d-grid">
+                            <a href="{% url 'listar_solicitudes' %}" class="btn btn-outline-info">
+                                <i class="fas fa-search"></i>
+                                <br>
+                                <small>Ver Todas las Solicitudes</small>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="d-grid">
+                            <button class="btn btn-outline-success" disabled>
+                                <i class="fas fa-bell"></i>
+                                <br>
+                                <small>Mis Notificaciones</small>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Solicitudes recientes -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-history text-info"></i>
+                    Solicitudes Recientes
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if solicitudes_recientes %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Título</th>
+                                    <th>Solicitante</th>
+                                    <th>Tipo</th>
+                                    <th>Estado</th>
+                                    <th>Fecha</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for solicitud in solicitudes_recientes %}
+                                <tr>
+                                    <td>
+                                        <code class="text-muted">{{ solicitud.id|slice:":8" }}...</code>
+                                    </td>
+                                    <td>
+                                        <strong>{{ solicitud.titulo|truncatechars:40 }}</strong>
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-user text-muted"></i>
+                                        {{ solicitud.solicitante }}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ solicitud.tipo_formateado }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ solicitud.color_estado }}">
+                                            {% if solicitud.estado == 'pendiente' %}
+                                                <i class="fas fa-hourglass-half"></i> Pendiente
+                                            {% elif solicitud.estado == 'aprobado' %}
+                                                <i class="fas fa-check-circle"></i> Aprobado
+                                            {% elif solicitud.estado == 'rechazado' %}
+                                                <i class="fas fa-times-circle"></i> Rechazado
+                                            {% else %}
+                                                <i class="fas fa-question-circle"></i> {{ solicitud.estado|title }}
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ solicitud.fecha_formateada }}</small>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'detalle_solicitud' solicitud.id %}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="Ver detalle">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if solicitudes_recientes|length >= 10 %}
+                    <div class="text-center mt-3">
+                        <a href="{% url 'listar_solicitudes' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-list"></i> Ver Todas las Solicitudes
+                        </a>
+                    </div>
+                    {% endif %}
+                    
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <p class="h5">No hay solicitudes aún</p>
+                        <p>Cuando crees tu primera solicitud, aparecerá aquí</p>
+                        <a href="{% url 'crear_solicitud' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Crear Primera Solicitud
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
