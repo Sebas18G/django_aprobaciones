@@ -147,6 +147,9 @@ venv.bak/
 # Static files generados
 staticfiles/
 
+# Backups
+*_bck_*
+
 # Spyder project settings
 .spyderproject
 .spyproject
